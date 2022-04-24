@@ -14,7 +14,6 @@
 package client_and_server
 
 import (
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -23,9 +22,10 @@ import (
 )
 
 func HandleClientRequest(resHeader http.ResponseWriter, r *http.Request) {
-	os.Setenv("VERSION_NAME", "YAOYUAN")
-	versionName := os.Getenv("VERSION_NAME")
-	fmt.Println("环境变量：", versionName)
+	user, paths, versionName := handleEnv()
+	log.Printf("用户%s，路径：%s，用户版本：%s\n", user, paths, versionName)
+	resHeader.Header().Set("USER", user)
+	resHeader.Header().Set("GO_PATHS", paths)
 	resHeader.Header().Set("VERSION_NAME", versionName)
 
 	requestHeader := r.Header
@@ -43,6 +43,13 @@ func HandleClientRequest(resHeader http.ResponseWriter, r *http.Request) {
 	log.Printf("当前您请求地址：%s\n", r.RequestURI)
 	log.Printf("当前您请求地址：%s\n", r.RemoteAddr)
 	log.Printf("当前请求HOST：%s\n", r.Host)
+}
+func handleEnv() (x, y, z string) {
+	x = os.Getenv("USER")
+	y = os.Getenv("GOPATH")
+	os.Setenv("VERSION_NAME", "YAOYUAN")
+	z = os.Getenv("VERSION_NAME")
+	return
 }
 func HandleHealth(resHeader http.ResponseWriter, r *http.Request) {
 	io.WriteString(resHeader, strconv.Itoa(http.StatusOK))
