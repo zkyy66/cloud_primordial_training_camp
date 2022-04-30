@@ -3,7 +3,7 @@ FROM golang:1.17
 LABEL maintainer="crazy_cat <ages521you@hotmail.com>"
 
 ENV GOPROXY https://goproxy.cn,direct
-
+ENV CODEPATH /usr/src/code
 # 安装必要的软件包和依赖包
 USER root
 RUN sed -i 's/deb.debian.org/mirrors.tuna.tsinghua.edu.cn/' /etc/apt/sources.list && \
@@ -32,9 +32,16 @@ RUN apt-get clean && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/* && \
     rm /var/log/lastlog /var/log/faillog
 # 设置工作目录
-WORKDIR /usr/src/code
+WORKDIR CODEPATH
 #copy-code
-COPY ./ /usr/src/code
+COPY . .
 RUN go build -o app .
+
+WORKDIR /dist
+
+RUN cp CODEPATH .
+
+RUN mkdir src .
+RUN cp -r CODEPATH/src/
 EXPOSE 8080
-CMD[""]
+CMD["/dist/app"]
