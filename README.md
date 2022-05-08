@@ -20,6 +20,7 @@
 #### 模块三步骤
 
 ```shell
+0. 按照要求Dockfile要求是多阶段构建
 1. 执行镜像pull命令：
     1. docker pull zkyy66/http_serverv
 2. 启动命令：
