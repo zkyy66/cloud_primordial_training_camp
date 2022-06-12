@@ -30,6 +30,7 @@
 ```
 
 ### 模块八作业
+yaml文件在exercises/module8/http-server-deployment.yaml
 ```yaml
 #Deployment方式部署
 apiVersion: apps/v1
