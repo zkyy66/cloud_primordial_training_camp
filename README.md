@@ -31,6 +31,7 @@
 
 ### 模块八作业
 yaml文件在exercises/module8/http-server-deployment.yaml
+参考资料：https://blog.csdn.net/weixin_39927378/article/details/111010625
 ```yaml
 #Deployment方式部署
 apiVersion: apps/v1
