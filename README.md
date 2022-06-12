@@ -51,24 +51,28 @@ spec:
       containers:
         - name: http-server-zkyy66
           image: docker.io/zkyy66/http_serverv:v2
-          ports:
-            - containerPort: 8080
+    imagePullPolicy: IfNotPresent
+      ports:
+        - containerPort: 8080
     lifecycle:
       postStart:
         exec:
           command: ["/bin/sh", "-c", "echo Hello from the http server handler > /usr/message"]
-      resources:
-        limits:
-          cpu: 200m
-          memory: 400Mi
-        requests:
-          cpu: 100m
-          memory: 200Mi
-      readinessProbe:
-        httpGet:
-          path: /healthz
-          port: 8080
-        initialDelaySeconds: 30
-        periodSeconds: 5
-        successThreshold: 2
+      preStop:
+        exec:
+          command: [ "/bin/sh","-c","ps -ef | grep monitor.go | grep grep -v | awk '{print $2}' | xargs kill" ]
+          resources:
+            limits:
+              cpu: 200m
+              memory: 400Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            successThreshold: 2
 ```
