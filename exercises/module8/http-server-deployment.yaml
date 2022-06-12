@@ -39,6 +39,8 @@ spec:
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
+            successThreshold: 2
+            timeoutSeconds: 1
           resources:
             limits:
               cpu: 200m
@@ -53,3 +55,9 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 5
             successThreshold: 2
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      volumes:
+        - name: loglevel
+          configMap:
+            name: loglevel
