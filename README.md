@@ -33,6 +33,17 @@
 yaml文件在exercises/module8/http-server-deployment.yaml
 参考资料：https://blog.csdn.net/weixin_39927378/article/details/111010625
 ```yaml
+#configMap
+apiVersion: v1
+metadata:
+  name: loglevel
+kind: ConfigMap
+data:
+  httpport: "8080"
+  loglevel: "info"
+
+---
+
 #Deployment方式部署
 apiVersion: apps/v1
 kind: Deployment
@@ -74,6 +85,8 @@ spec:
               scheme: HTTP
             initialDelaySeconds: 5
             periodSeconds: 10
+            successThreshold: 2
+            timeoutSeconds: 1
           resources:
             limits:
               cpu: 200m
@@ -88,4 +101,10 @@ spec:
             initialDelaySeconds: 30
             periodSeconds: 5
             successThreshold: 2
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
+      volumes:
+        - name: loglevel
+          configMap:
+            name: loglevel
 ```
