@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: http-server-zkyy66
-          image: docker.io/zkyy66/http_serverv:v2
+          image: docker.io/zkyy66/http_serverv:latest
           ports:
             - containerPort: 8080
     lifecycle:

@@ -51,7 +51,7 @@ spec:
     spec:
       containers:
         - name: http-server-zkyy66
-          image: docker.io/zkyy66/http_serverv:v2
+          image: docker.io/zkyy66/http_serverv:latest
     imagePullPolicy: IfNotPresent
       ports:
         - containerPort: 8080
