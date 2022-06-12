@@ -2,6 +2,7 @@ package main
 
 import (
 	"cloud_primordial_training_camp/exercises/module2/client_and_server"
+	"cloud_primordial_training_camp/exercises/module8"
 	"fmt"
 )
 
@@ -20,4 +21,5 @@ func main() {
 
 	fmt.Println("module2---")
 	client_and_server.ClientRequest()
+	module8.GraceMain()
 }
