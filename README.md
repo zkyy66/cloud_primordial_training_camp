@@ -44,6 +44,11 @@ spec:
   selector:
     matchLabels:
       app: http-server
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
   template:
     metadata:
       labels:
@@ -56,12 +61,19 @@ spec:
           ports:
             - containerPort: 8080
           lifecycle:
-              postStart:
-                exec:
-                  command: ["/bin/sh", "-c", "echo Hello from the http server handler > /usr/message"]
-              preStop:
-                exec:
-                  command: [ "/bin/sh","-c","ps -ef | grep monitor.go | grep grep -v | awk '{print $2}' | xargs kill" ]
+            postStart:
+              exec:
+                command: [ "/bin/sh", "-c", "echo Hello from the http server handler > /usr/message" ]
+            preStop:
+              exec:
+                command: [ "/bin/sh","-c","ps -ef | grep monitor.go | grep grep -v | awk '{print $2}' | xargs kill" ]
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
           resources:
             limits:
               cpu: 200m
