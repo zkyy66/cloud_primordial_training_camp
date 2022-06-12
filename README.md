@@ -52,16 +52,16 @@ spec:
       containers:
         - name: http-server-zkyy66
           image: docker.io/zkyy66/http_serverv:latest
-    imagePullPolicy: IfNotPresent
-      ports:
-        - containerPort: 8080
-    lifecycle:
-      postStart:
-        exec:
-          command: ["/bin/sh", "-c", "echo Hello from the http server handler > /usr/message"]
-      preStop:
-        exec:
-          command: [ "/bin/sh","-c","ps -ef | grep monitor.go | grep grep -v | awk '{print $2}' | xargs kill" ]
+          imagePullPolicy: IfNotPresent
+          ports:
+            - containerPort: 8080
+          lifecycle:
+              postStart:
+                exec:
+                  command: ["/bin/sh", "-c", "echo Hello from the http server handler > /usr/message"]
+              preStop:
+                exec:
+                  command: [ "/bin/sh","-c","ps -ef | grep monitor.go | grep grep -v | awk '{print $2}' | xargs kill" ]
           resources:
             limits:
               cpu: 200m
