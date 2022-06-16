@@ -1,3 +1,7 @@
+---
+
+---
+
 # cloud_primordial_training_camp
 # 云原生
 
@@ -115,10 +119,40 @@ spec:
 
 建立HTTPServer的svc
 
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: http-server
+  name: httpsvc
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: http-server
+  type: ClusterIP
+
+```
+
 安装ingress，这个过程并未采用领教的安装方式， 因为无法从k8s.gcr上拉取成功，故采用官网方式把文件下载到本地之后(deploy.yaml->ingress-nginx-deploy.yaml)，把关于k8s.gcr拉取镜像地址进行修改
 
 ```yaml
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.0/deploy/static/provider/cloud/deploy.yaml
+```
+
+```
+          #把相关关于gcr修改的部分贴出来，因为整个yaml文件太长
+          #image: k8s.gcr.io/ingress-nginx/controller:v1.2.0@sha256:d8196e3bc1e72547c5dec66d6556c0ff92a23f6d0919b206be170bc90d5f9185
+          image: registry.cn-hangzhou.aliyuncs.com/google_containers/nginx-ingress-controller:v1.2.0
+          
+                    #image: k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
+          image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-webhook-certgen:v1.1.1
+          
+                    #image: k8s.gcr.io/ingress-nginx/kube-webhook-certgen:v1.1.1@sha256:64d8c73dca984af206adf9d6d7e46aa550362b1d7a01f3a0a91b20cc67868660
+          image: registry.cn-hangzhou.aliyuncs.com/google_containers/kube-webhook-certgen:v1.1.1
 ```
 
 安装Metallb
@@ -131,6 +165,51 @@ kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manif
 
 创建名为config且命名空间为 metallb-system的configMap
 
-关于证书在此不一一说明，采用的是孟老师那种手动生成方式
+```
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  namespace: metallb-system
+  name: config
+data:
+  config: |
+    address-pools:
+    - name: default
+      protocol: layer2
+      #采用2层负载，对于目前本人来说较为简单，address为ip地址范围
+      addresses:
+      - 192.168.50.27-192.168.50.250
+
+```
+
+关于证书在此不一一说明
 
 在最后创建一个kind为Ingress的yaml
+
+```
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+  name: http-server
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: http-server.51.cafe
+      http:
+        paths:
+          - backend:
+              service:
+                name: httpsvc
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - http-server.51.cafe
+      secretName: http-server
+
+```
+
