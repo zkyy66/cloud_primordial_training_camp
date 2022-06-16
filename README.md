@@ -29,8 +29,9 @@
     1. https://hub.docker.com/r/zkyy66/http_serverv
 ```
 
-### 模块八作业
+### 模块八作业第一部分
 yaml文件在exercises/module8/http-server-deployment.yaml
+
 参考资料：https://blog.csdn.net/weixin_39927378/article/details/111010625
 ```yaml
 #configMap
@@ -108,3 +109,28 @@ spec:
           configMap:
             name: loglevel
 ```
+### 模块八作业第二部分说明
+
+相关文件地址：exercises/module8/part2目录下
+
+建立HTTPServer的svc
+
+安装ingress，这个过程并未采用领教的安装方式， 因为无法从k8s.gcr上拉取成功，故采用官网方式把文件下载到本地之后(deploy.yaml->ingress-nginx-deploy.yaml)，把关于k8s.gcr拉取镜像地址进行修改
+
+```yaml
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.2.0/deploy/static/provider/cloud/deploy.yaml
+```
+
+安装Metallb
+
+```yaml
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/namespace.yaml 
+
+kubectl apply -f https://raw.githubusercontent.com/metallb/metallb/v0.12.1/manifests/metallb.yaml
+```
+
+创建名为config且命名空间为 metallb-system的configMap
+
+关于证书在此不一一说明，采用的是孟老师那种手动生成方式
+
+在最后创建一个kind为Ingress的yaml

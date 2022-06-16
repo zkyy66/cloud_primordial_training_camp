@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    cert-manager.io/issuer: letsencrypt-prod
+  name: http-server
+spec:
+  ingressClassName: nginx
+  rules:
+    - host: http-server.51.cafe
+      http:
+        paths:
+          - backend:
+              service:
+                name: httpsvc
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+  tls:
+    - hosts:
+        - http-server.51.cafe
+      secretName: http-server
