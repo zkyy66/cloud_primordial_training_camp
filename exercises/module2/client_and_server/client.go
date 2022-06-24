@@ -15,19 +15,25 @@
 package client_and_server
 
 import (
+	"cloud_primordial_training_camp/exercises/module10/metrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"log"
 	"net/http"
 )
 
 func ClientRequest() {
+	metrics.Register()
 	//记录开始
 	http.HandleFunc("/", HandleClientRequest)
 	http.HandleFunc("/healthz", HandleHealth)
+	http.HandleFunc("/metrics", promhttp.Handler())
 	errInfo := http.ListenAndServe(":8080", nil)
 	if errInfo != nil {
 		log.Fatalf("Error %s\n", errInfo)
 	}
 }
+
+func rootHandle(w http.ResponseWriter)
 
 //func HandleEnv() {
 //	glog.V(2).Info(os.Environ())
