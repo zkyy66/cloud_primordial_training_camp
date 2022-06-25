@@ -16,24 +16,56 @@ package client_and_server
 
 import (
 	"cloud_primordial_training_camp/exercises/module10/metrics"
+	"fmt"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"io"
 	"log"
+	"math/rand"
 	"net/http"
+	"time"
 )
 
 func ClientRequest() {
+	//http.HandleFunc("/", HandleClientRequest)
+	//http.HandleFunc("/healthz", HandleHealth)
+
 	metrics.Register()
-	//记录开始
-	http.HandleFunc("/", HandleClientRequest)
-	http.HandleFunc("/healthz", HandleHealth)
-	http.HandleFunc("/metrics", promhttp.Handler())
-	errInfo := http.ListenAndServe(":8080", nil)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handleIndexRequest)
+	mux.HandleFunc("/index", handleIndexRequest)
+	mux.HandleFunc("/client", HandleClientRequest)
+	mux.HandleFunc("/healthz", HandleHealth)
+
+	mux.Handle("/metrics", promhttp.Handler())
+
+	errInfo := http.ListenAndServe(":8080", mux)
 	if errInfo != nil {
 		log.Fatalf("Error %s\n", errInfo)
 	}
 }
 
-func rootHandle(w http.ResponseWriter)
+func handleIndexRequest(w http.ResponseWriter, r *http.Request) {
+
+	timer := metrics.NewTimer()
+	defer timer.ObserveTotal()
+	delay := randInt(10, 2000)
+	time.Sleep(time.Millisecond * time.Duration(delay))
+
+	user := r.URL.Query().Get("index")
+	if user != "" {
+		io.WriteString(w, fmt.Sprintf("hello %s\n", user))
+	} else {
+		io.WriteString(w, "hello 请正确输入URL\n")
+	}
+
+	io.WriteString(w, "***********请求详情*************")
+	log.Printf("响应的多少时间：%d ms", delay)
+}
+
+func randInt(min, max int) int {
+	rand.Seed(time.Now().Unix())
+	return rand.Intn(max-min) + min
+}
 
 //func HandleEnv() {
 //	glog.V(2).Info(os.Environ())
