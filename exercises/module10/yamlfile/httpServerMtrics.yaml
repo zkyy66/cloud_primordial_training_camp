@@ -1,23 +1,57 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: http-server-me
-  labels:
-    app: http-server
+  name: http-server-metrics
 spec:
+  replicas: 3
   selector:
     matchLabels:
       app: http-server
-  replicas: 2
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
   template:
     metadata:
+      annotations: 
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
       labels:
         app: http-server
     spec:
       containers:
-        - name: http-server-metrics
-          image: xxx
-          imagePullPolicy: Always
+        - name: http-server-zkyy66
+          image: docker.io/zkyy66/http_serverv:latest
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 8080
-
+          lifecycle:
+            postStart:
+              exec:
+                command: [ "/bin/sh", "-c", "echo Hello from the http server handler > /usr/message" ]
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+              scheme: HTTP
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            successThreshold: 2
+            timeoutSeconds: 1
+          resources:
+            limits:
+              cpu: 200m
+              memory: 400Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: 8080
+            initialDelaySeconds: 30
+            periodSeconds: 5
+            successThreshold: 2
+          terminationMessagePath: /dev/termination-log
+          terminationMessagePolicy: File
