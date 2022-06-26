@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	MetricNamespace = "http-server"
+	MetricNamespace = "httpserver"
 )
 
 // ExecutionTimer measures execution time of a computation, split into major steps
