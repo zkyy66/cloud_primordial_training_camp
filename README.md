@@ -1,7 +1,3 @@
----
-
----
-
 # cloud_primordial_training_camp
 # 云原生
 
@@ -213,3 +209,191 @@ spec:
 
 ```
 
+## 模块10作业：通过Grafana和Prometheus监控httpServer
+修改了入口文件main.go中调用的client_and_server.ClientRequest()
+```go
+//路径：exercises/module2/client_and_server/client.go
+func ClientRequest() {
+	//http.HandleFunc("/", HandleClientRequest)
+	//http.HandleFunc("/healthz", HandleHealth)
+
+	metrics.Register()
+	mux := http.NewServeMux()
+	mux.HandleFunc("/", handleIndexRequest)
+	mux.HandleFunc("/index", handleIndexRequest)
+	mux.HandleFunc("/client", HandleClientRequest)
+	mux.HandleFunc("/healthz", HandleHealth)
+
+	mux.Handle("/metrics", promhttp.Handler())
+
+	errInfo := http.ListenAndServe(":8080", mux)
+	if errInfo != nil {
+		log.Fatalf("Error %s\n", errInfo)
+	}
+}
+//新增了方法
+func handleIndexRequest(w http.ResponseWriter, r *http.Request) {
+
+	timer := metrics.NewTimer()
+	defer timer.ObserveTotal()
+	delay := randInt(10, 2000)
+	time.Sleep(time.Millisecond * time.Duration(delay))
+
+	user := r.URL.Query().Get("index")
+	if user != "" {
+		io.WriteString(w, fmt.Sprintf("hello %s\n", user))
+	} else {
+		io.WriteString(w, "hello 请正确输入URL\n")
+	}
+
+	io.WriteString(w, "***********请求详情*************")
+	log.Printf("响应的多少时间：%d ms", delay)
+}
+
+新增了目录和文件module10/metrics下的metrics.go负责向prometheus注册
+```
+通过孟老师教程中关于GrafanaDashboardJson文件构建图形化
+```json
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 4,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.95, sum(rate(httpserver_execution_latency_seconds_bucket[5m])) by (le))",
+          "interval": "",
+          "legendFormat": "",
+          "refId": "A"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.90, sum(rate(httpserver_execution_latency_seconds_bucket[5m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "B"
+        },
+        {
+          "exemplar": true,
+          "expr": "histogram_quantile(0.50, sum(rate(httpserver_execution_latency_seconds_bucket[5m])) by (le))",
+          "hide": false,
+          "interval": "",
+          "legendFormat": "",
+          "refId": "C"
+        }
+      ],
+      "title": "Response Latency by Percentile",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Http Server Latency",
+  "uid": "mWgwgx5nz",
+  "version": 2
+}
+```
+#### 图片展示结果如下
