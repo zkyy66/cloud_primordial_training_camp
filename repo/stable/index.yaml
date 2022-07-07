@@ -1,0 +1,24 @@
+apiVersion: v1
+entries:
+  myHttpServer:
+  - apiVersion: v2
+    appVersion: latest
+    created: "2022-07-07T10:08:54.616874313+08:00"
+    description: A Helm chart for Kubernetes
+    digest: 358950225b4ac076a6277bc86e454c1663703c5499eaf5567113c3ed0c9fda49
+    name: myHttpServer
+    type: application
+    urls:
+    - https://github.com/zkyy66/cloud_primordial_training_camp/tree/main/repo/stable/myHttpServer-0.1.2.tgz
+    version: 0.1.2
+  - apiVersion: v2
+    appVersion: latest
+    created: "2022-07-07T10:08:54.616500858+08:00"
+    description: A Helm chart for Kubernetes
+    digest: e557010776a97c4e923ed5eada92684ad45d2732a4dd17bb3b30da8e09590941
+    name: myHttpServer
+    type: application
+    urls:
+    - https://github.com/zkyy66/cloud_primordial_training_camp/tree/main/repo/stable/myHttpServer-0.1.1.tgz
+    version: 0.1.1
+generated: "2022-07-07T10:08:54.615822435+08:00"
