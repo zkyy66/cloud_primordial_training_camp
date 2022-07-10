@@ -8,6 +8,9 @@
     - [模块八作业第一部分](#模块八作业第一部分)
     - [模块八作业第二部分说明](#模块八作业第二部分说明)
 - [通过Grafana和Prometheus监控httpServer](##模块10作业：通过grafana和prometheus监控httpserver)
+- [模块12作业](#模块12作业)
+    - [HttpServer的Github地址](#httpserver的github地址)
+    - [步骤](#步骤)
 ## GitHub地址- [cloud_primordial_training_camp](#cloud-primordial-training-camp)
 
 ```tex
@@ -407,3 +410,106 @@ func handleIndexRequest(w http.ResponseWriter, r *http.Request) {
 ![e7d5114a4363abe405bbbbf31e147ee](https://user-images.githubusercontent.com/756021/175799871-bba6d65c-2dc6-459e-8f78-5d35461acbe1.png)
 ![37f787ca9c915d60a89d76fe129d108](https://user-images.githubusercontent.com/756021/175799877-0f325c41-12f7-4b8b-9721-061b2235896d.png)
 ![f31c283da5fc94799fdbd691f8668f7](https://user-images.githubusercontent.com/756021/175799878-92adea71-073a-422f-80b9-763745576844.png)
+
+# 模块12作业
+之前开发的httpServer根据孟老师的讲解，进行了拆分。但为了不影响现有的代码仓库，所以拆分后的服务放到了另一个仓库
+### HttpServer的Github地址
+```tex
+https://github.com/zkyy66/httpserver
+```
+在zkyy66/cloud_primordial_training_camp仓库下的exercises建立了文件夹：module12目录并建立了service1，service2，service3及istio-spec.yaml文件
+现提出其中一个service文件，其他都一样除了名字
+```yaml
+#Deployment方式部署
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: http-service1
+spec:
+  #replicas: 3
+  selector:
+    matchLabels:
+      app: http-service1
+  template:
+    metadata:
+      labels:
+        app: http-service1
+    spec:
+      containers:
+        - name: http-service1
+          image: docker.io/zkyy66/service1:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: http-server-service1
+spec:
+  ports:
+    - name: http-service1
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: http-service1
+```
+istio-spec.yaml的内容编写还不是很好，感觉对virtualService和gateway的理解还不那么彻底，编写的肯定有问题，等领教讲解之后进行补充和完善
+```yaml
+#istio-spec.yaml
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: http-service1
+spec:
+  gateways:
+    - httpserver-gateway
+  hosts:
+    - '*'
+  http:
+    - match:
+        - uri:
+            exact: /service0
+      route:
+        - destination:
+            host: service0
+            port:
+              number: 8080
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: httpserver-gateway
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - hosts:
+        - '*'
+      port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: cncamp-credential
+```
+#### 步骤
+**说明：关于域名的配置规则，这部分设置的"*"**
+```shell
+kubectl create ns securesvc
+
+kubectl label ns securesvc istio-injection=enabled
+
+kubectl create -f httpserver.yaml -n securesvc
+
+openssl req -x509 -sha256 -nodes -days 365 -newkey rsa:2048 -subj '/O=cncamp Inc./CN=*.cncamp.io' -keyout cncamp.io.key -out cncamp.io.crt
+
+kubectl create -n istio-system secret tls cncamp-credential --key=cncamp.io.key --cert=cncamp.io.crt
+
+kubectl apply -f service1-deploy-spec.yaml -n securesvc
+kubectl apply -f service2-deploy-spec.yaml -n securesvc
+kubectl apply -f service3-deploy-spec.yaml -n securesvc
+kubectl apply -f istio-spec.yaml -n securesvc
+```
