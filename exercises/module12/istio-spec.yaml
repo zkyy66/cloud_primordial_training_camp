@@ -16,6 +16,11 @@ spec:
             host: service0
             port:
               number: 8080
+        fault:
+          abort:
+            httpStatus: 500
+            percentage:
+              value: 50
 ---
 apiVersion: networking.istio.io/v1beta1
 kind: Gateway
