@@ -11,6 +11,7 @@
 - [模块12作业](#模块12作业)
     - [HttpServer的Github地址](#httpserver的github地址)
     - [步骤](#步骤)
+- [模块十五](#模块十五)
 ## GitHub地址- [cloud_primordial_training_camp](#cloud-primordial-training-camp)
 
 ```tex
@@ -514,3 +515,6 @@ kubectl apply -f service3-deploy-spec.yaml -n securesvc
 kubectl apply -f istio-spec.yaml -n securesvc
 ```
 ## 模块十五
+```text
+感悟路径：exercises/module15/class.md
+```
